@@ -1,0 +1,1 @@
+This repository contains the Social Circles model, originally created by Hamill and Gilbert (2009) in Netlogo (https://www.jasss.org/12/2/3.html). The experimental design used to parameterise such model can also be found here. The file reproduces and expands the original set of experiments.
