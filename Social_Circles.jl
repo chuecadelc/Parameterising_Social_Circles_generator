@@ -32,6 +32,9 @@ df_nodes =  DataFrame(
     social_distance= Any[]
 )
 
+## node-level centrality measures ##
+
+node_level_df = DataFrame()
 
 # Eucledian distance between points so you can make an edge ##
 
@@ -39,7 +42,27 @@ function euclidean_distance_cal(pair1, pair2,rows,cols)
     x1, y1 = pair1
     x2, y2 = pair2
 
-    return round(Int,sqrt((x2 - x1)^2 + (y2 - y1)^2))
+    # wrapping the torus around
+    if abs(x1 - x2) > cols/2
+        
+        min_x_value = min(x1,x2)
+    
+        # adds length of rows to the smaller value of the two coordinates
+        x1 += cols * (x1 == min_x_value)
+        x2 += cols * (x2 == min_x_value)
+    end
+
+    # we also need to check the same for y dimension and add the length of col/row to lower value
+    if abs(y1 - y2) > rows/2
+
+        min_y_value = min(y1,y2)
+        # adds length of rows to the smaller value of the two coordinates
+        y1 += rows * (y1 == min_y_value)
+        y2 += rows * (y2 == min_y_value)
+       
+    end
+
+    return sqrt((x2 - x1)^2 + (y2 - y1)^2)
 
 end
 
@@ -125,4 +148,28 @@ function Social_Circles(rows,cols,nodes_req,green,blue,social_reach)
     return graph 
 
 end
-oc
+
+# outputing the node-level measures 
+function node_centrality_cal(network)
+
+    experiment = fill(0,1000) # change to 2000 for density experiments
+    run_number = fill(0,1000)
+    node_id = collect(vertices(network))
+    node_deg = degree(network)
+    node_close = betweenness_centrality(network)
+    node_betw = closeness_centrality(network)
+    node_eig = eigenvector_centrality(network)
+    local_clust = local_clustering_coefficient(network)
+
+    col_to_row = hcat(experiment,run_number, node_id, node_deg, node_close, node_betw, node_eig, local_clust)
+
+    col_names = ["experiment", "run_number","node_id", "node_deg", "node_close", "node_betw", "node_eig", "local_clust"]
+
+    internal_df = DataFrame(col_to_row, col_names)
+
+    append!(node_level_df,  internal_df)
+
+    return node_level_df
+
+end
+
